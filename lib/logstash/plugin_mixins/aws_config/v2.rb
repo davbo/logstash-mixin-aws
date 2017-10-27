@@ -40,13 +40,28 @@ module LogStash::PluginMixins::AwsConfig::V2
   private
   def credentials
     @creds ||= begin
-                 if @access_key_id && @secret_access_key
+                 if @access_key_id && @secret_access_key && @role_arn && @role_session_name
+                   credentials_opts = {
+                     :access_key_id => @access_key_id,
+                     :secret_access_key => @secret_access_key,
+                     :role_arn => @role_arn,
+                     :role_session_name => @role_session_name
+                   }
+                   credentials_opts[:session_token] = @session_token if @session_token
+                   credentials_opts[:external_id] = @external_id if @external_id
+                   credentials_opts[:client] = Aws::STS::Client.new(region: @region)
+                   Aws::AssumeRoleCredentials.new(credentials_opts)
+
+                 elsif @access_key_id && @secret_access_key
                    credentials_opts = {
                      :access_key_id => @access_key_id,
                      :secret_access_key => @secret_access_key
                    }
-
                    credentials_opts[:session_token] = @session_token if @session_token
+
+                   Aws::Credentials.new(credentials_opts[:access_key_id],
+                                        credentials_opts[:secret_access_key],
+                                        credentials_opts[:session_token])
                  elsif @aws_credentials_file
                    credentials_opts = YAML.load_file(@aws_credentials_file)
                  end
