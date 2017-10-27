@@ -49,6 +49,17 @@ describe LogStash::PluginMixins::AwsConfig do
         end
       end
 
+      context 'assume-role credential' do
+        let(:settings) { { 'access_key_id' => '1234', 'secret_access_key' => 'secret', 'role_arn' => 'somerole/accountid', 'external_id' => 'someid' } }
+
+        it "should support passing as key, secret_key, role_arn and external_id" do
+          expect(subject[:access_key_id]).to eq(settings["access_key_id"])
+          expect(subject[:secret_access_key]).to eq(settings["secret_access_key"])
+          expect(subject[:role_arn]).to eq(settings["role_arn"])
+          expect(subject[:external_id]).to eq(settings["external_id"])
+        end
+      end
+
       context 'normal credential' do
         let(:settings) { { 'access_key_id' => '1234',  'secret_access_key' => 'secret' } }
 
@@ -120,6 +131,18 @@ describe LogStash::PluginMixins::AwsConfig::V2 do
         it 'should support passing credentials as key, value' do
           expect(subject.access_key_id).to eq(settings['access_key_id'])
           expect(subject.secret_access_key).to eq(settings['secret_access_key'])
+        end
+      end
+
+      context 'assume-role credential' do
+        let(:settings) { { 'access_key_id' => '1234', 'secret_access_key' => 'secret', 'role_arn' => 'somerole/accountid', 'external_id' => 'someid' } }
+
+        it "should support passing as key, secret_key, role_arn and external_id" do
+          expect(subject.access_key_id).to eq(settings['access_key_id'])
+          expect(subject.secret_access_key).to eq(settings['secret_access_key'])
+          expect(subject.role_arn).to eq(settings['role_arn'])
+          expect(subject.external_id).to eq(settings['external_id'])
+          expect(subject.role_session_name).to eq('logstash')
         end
       end
     end
